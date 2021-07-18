@@ -110,9 +110,135 @@ window.addEventListener('DOMContentLoaded', () => {
     alert('Конечно, давай еще раз посмотрим на сайт, перчик ;)');
  });
 
+   // modal
+   function openModal() {
+    modal.classList.add('show'); // добавляем класс css show
+    modal.classList.remove('hide'); // убираем класс hide
+    document.body.style.overflow = 'hidden'; // не позваляем скролить при открытом модальном окне
+    clearInterval(modalTimeId); // если пользователь уже вызвал до таймера окно, то оно не появиться
+ }
+
+ modalTrigger.forEach(btn => { //у нас 2 кнопки, перебираем псевдомассив, чтобы работала на 2 кнопках
+    btn.addEventListener('click', openModal);
+ });
+
+ function closeModal() {
+    modal.classList.add('hide');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+ }
+ 
+ modalCloseBtn.addEventListener('click', closeModal);
 
 
+ modal.addEventListener('click', (e) => { // если клик не в окно - то окно скрывается
+    if (e.target === modal) {
+       closeModal();
+    }
+ });
 
+ document.addEventListener('keydown', (e) => { // закрываем модельное окно по нажатию на Esc
+    if (e.code === "Escape" && modal.classList.contains('show')) {
+       closeModal();
+    }
+ });
+
+ const modalTimeId = setTimeout(openModal, 10000); // вызываем модельное окно через 10 секунд
+
+ function showModalByScroll() {
+    if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
+       openModal();
+       window.removeEventListener('scroll', showModalByScroll);
+       clearInterval(modalTimeId); // если пользователь уже вызвал до таймера окно, то оно не появиться
+    }
+ }
+
+ window.addEventListener('scroll', showModalByScroll);
+
+   // =====
+   // создаем карточки товаров с помощью классов
+
+   class MenuCard {
+    constructor(src, alt, title, descr, price, parentSelector, ...classes) {
+       this.src = src;
+       this.alt = alt;
+       this.title = title;
+       this.descr = descr;
+       this.price = price;
+       this.classes = classes;
+       this.parent = document.querySelector(parentSelector); 
+       this.transfer = 74; // курс валют рубл к доллару.
+       this.changeToRuble(); // вызываем метод конвентирования прям в конструкторе
+    }
+
+    changeToRuble() { // метод, который конвентирует $ в руб
+       this.price = +this.price * this.transfer;
+    }
+
+    render() { // метод позволяет сформировать верстку
+       const element = document.createElement('div');
+       if (this.classes.length === 0) { // если класс не будет,мы  подставляем указываем class по умлочанию
+          this.element = 'menu__item';
+          element.classList.add(this.element);
+       } else { // если будет какой-то класс, то перебираем массив и добавляем его.
+          this.classes.forEach(className => element.classList.add(className));
+       }
+       // и копируем нашу карточку из html 
+       element.innerHTML = `
+             <img src=${this.src} alt=${this.alt}>
+             <h3 class="menu__item-subtitle">${this.title}</h3>
+             <div class="menu__item-descr">${this.descr}</div>
+             <div class="menu__item-divider"></div>
+             <div class="menu__item-price">
+                <div class="menu__item-cost">Цена:</div>
+                <div class="menu__item-total"><span>${this.price}</span> руб/день</div>
+             </div>
+    `;
+    this.parent.append(element); // помещаем наш созданные элемент во внутрь того же эллемента 
+    }
+
+ }
+
+ // const div = new MenuCard();  -- можно пиисать так и это правильно
+ // div.render();
+ // либо сделать так new MenuCard().render(); осле обработки он исчезнет и на него не будет ссылок 
+
+ new MenuCard(
+    "img/tabs/vegy.jpg",
+    "vegy",
+    'Меню "Фитнес"',
+    `Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и
+     фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной
+     ценой и высоким качеством!`,
+     10,
+     '.menu .container',
+     // здесь мы не указываем rest оператор классов, но он добавляется у нас как элемент
+     // по умолчанию в 179 строке
+ ).render(); 
+
+ new MenuCard(
+    "img/tabs/elite.jpg",
+    "elite",
+    'Меню “Премиум"',
+    `В меню “Премиум” мы используем не только красивый дизайн упаковки, но
+    и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода
+    в ресторан!`,
+     16,
+     '.menu .container',
+     'menu__item'   
+ ).render(); 
+
+ new MenuCard(
+    "img/tabs/post.jpg",
+    "post",
+    'Меню "Постное"',
+    `Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие
+    продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное
+    количество белков за счет тофу и импортных вегетарианских стейков.`,
+     8,
+     '.menu .container',
+     'menu__item'
+ ).render(); 
 
 
 
